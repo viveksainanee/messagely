@@ -1,6 +1,7 @@
 const express = require('express');
 const User = require('../models/user');
 const Message = require('../models/message');
+const { ensureLoggedIn } = require("../middleware/auth")
 
 router = express.Router();
 
@@ -10,7 +11,7 @@ router = express.Router();
  *
  **/
 
-router.get('/', async (req, res, next) => {
+router.get('/',ensureLoggedIn,async (req, res, next) => {
   const result = await User.all();
   return res.json(result);
 });
