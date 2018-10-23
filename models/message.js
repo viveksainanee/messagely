@@ -26,10 +26,10 @@ class Message {
         RETURNING id, from_username, to_username, body, sent_at`,
           [from_username, to_username, body]
         );
-        return res.json(result.rows[0]);
+        return result.rows[0];
       }
     } catch (err) {
-      return next(err);
+      return err;
     }
   }
 
@@ -54,32 +54,36 @@ class Message {
 
   static async get(id) {
     try {
-      const fromUser = await db.query(
+      let fromUser = await db.query(
         `SELECT username, first_name, last_name, phone
       FROM messages
-      JOIN users on messages.from_user = users.username
+      JOIN users on messages.from_username = users.username
       WHERE id=$1`,
         [id]
       );
 
-      const toUser = await db.query(
+      let toUser = await db.query(
         `SELECT username, first_name, last_name, phone
       FROM messages
-      JOIN users on messages.to_user = users.username
+      JOIN users on messages.to_username = users.username
       WHERE id=$1`,
         [id]
       );
 
-      const message = await db.query(
-        `SELECT id, from_user, to_user, body, sent_at, read_at
+      let message = await db.query(
+        `SELECT id, from_username, to_username, body, sent_at, read_at
       FROM messages
       WHERE id=$1`,
         [id]
       );
 
-      return res.json({ message, from_user, to_user });
+      fromUser = fromUser.rows[0];
+      toUser = toUser.rows[0];
+      message = message.rows[0];
+
+      return { message, fromUser, toUser };
     } catch (err) {
-      return next(err);
+      return err;
     }
   }
 }

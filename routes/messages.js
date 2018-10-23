@@ -1,3 +1,10 @@
+const express = require('express');
+const User = require('../models/user');
+const Message = require('../models/message');
+const { ensureLoggedIn } = require('../middleware/auth.js');
+
+router = express.Router();
+
 /** GET /:id - get detail of message.
  *
  * => {message: {id,
@@ -11,6 +18,12 @@
  *
  **/
 
+router.get('/:id', async (req, res, next) => {
+  let id = req.params.id;
+  let message = await Message.get(id);
+
+  return res.json(message);
+});
 
 /** POST / - post message.
  *
@@ -19,6 +32,11 @@
  *
  **/
 
+router.post('/', async (req, res, next) => {
+  let { from_username, to_username, body } = req.body;
+  let message = await Message.create({ from_username, to_username, body });
+  return res.json(message);
+});
 
 /** POST/:id/read - mark message as read:
  *
@@ -28,3 +46,23 @@
  *
  **/
 
+router.post('/:id/read', ensureLoggedIn, async (req, res, next) => {
+  try {
+    let id = req.params.id;
+    let message = await Message.get(id);
+
+    console.log(req.username);
+    console.log(message);
+
+    if (req.username === message.message.to_username) {
+      await Message.markRead(id);
+      return res.json('Marked as read');
+    } else {
+      throw new Error('not authorized to see tmessage');
+    }
+  } catch (err) {
+    return next(err);
+  }
+});
+
+module.exports = router;
