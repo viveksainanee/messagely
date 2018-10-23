@@ -1,6 +1,7 @@
 const express = require('express');
 const User = require('../models/user');
 const Message = require('../models/message');
+const { ensureLoggedIn } = require("../middleware/auth")
 
 router = express.Router();
 
@@ -23,6 +24,7 @@ router.post('/login', async (req, res, next) => {
  *  Make sure to update their last-login!
  */
 
+//  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3QiLCJpYXQiOjE1NDAzMTQ2MDksImV4cCI6MTU0MDMxODIwOX0.XX21PITt2dDceSDWErstTqpifti8kLufY6FPlP2h_As"
 router.post('/register', async (req, res, next) => {
   let { username, password, first_name, last_name, phone } = req.body;
 

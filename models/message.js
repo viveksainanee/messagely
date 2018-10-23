@@ -1,4 +1,12 @@
 const db = require('../db');
+const {
+  fromPhone,
+  accountSid,
+  authToken,
+  SECRET_KEY,
+  toPhone
+} = require('../config');
+const client = require('twilio')(accountSid, authToken);
 
 /** Message class for message.ly */
 
@@ -13,10 +21,12 @@ class Message {
     try {
       //check if the user exists
       const result = await db.query(
-        'SELECT password FROM users WHERE username = $1',
+        'SELECT phone FROM users WHERE username = $1',
         [to_username]
       );
       let user = result.rows[0];
+
+      let toPhoneNum = result.rows[0].phone;
 
       if (user) {
         // insert the message
@@ -26,6 +36,9 @@ class Message {
         RETURNING id, from_username, to_username, body, sent_at`,
           [from_username, to_username, body]
         );
+
+        await Message.sendSmsMessage(fromPhone, toPhoneNum, body);
+
         return result.rows[0];
       }
     } catch (err) {
@@ -85,6 +98,9 @@ class Message {
     } catch (err) {
       return err;
     }
+  }
+  static async sendSmsMessage(fromPhone, toPhone, body) {
+    await client.messages.create({ body, from: fromPhone, to: toPhone });
   }
 }
 

@@ -2,6 +2,13 @@ const express = require('express');
 const User = require('../models/user');
 const Message = require('../models/message');
 const { ensureLoggedIn } = require('../middleware/auth.js');
+const {
+  fromPhone,
+  accountSid,
+  authToken,
+  SECRET_KEY,
+  toPhone
+} = require('../config');
 
 router = express.Router();
 
@@ -32,7 +39,7 @@ router.get('/:id', async (req, res, next) => {
  *
  **/
 
-router.post('/', async (req, res, next) => {
+router.post('/', ensureLoggedIn, async (req, res, next) => {
   let { from_username, to_username, body } = req.body;
   let message = await Message.create({ from_username, to_username, body });
   return res.json(message);
@@ -60,6 +67,18 @@ router.post('/:id/read', ensureLoggedIn, async (req, res, next) => {
     } else {
       throw new Error('not authorized to see tmessage');
     }
+  } catch (err) {
+    return next(err);
+  }
+});
+
+router.post('/send', async (req, res, next) => {
+  try {
+    const body = req.body.body;
+
+    await Message.sendSmsMessage(fromPhone, toPhone, body);
+
+    return res.json('message sent!');
   } catch (err) {
     return next(err);
   }
