@@ -1,7 +1,7 @@
 const express = require('express');
 const User = require('../models/user');
 const Message = require('../models/message');
-const { ensureLoggedIn } = require("../middleware/auth")
+const { ensureLoggedIn, ensureCorrectUser } = require("../middleware/auth")
 
 router = express.Router();
 
@@ -11,7 +11,7 @@ router = express.Router();
  *
  **/
 
-router.get('/',ensureLoggedIn,async (req, res, next) => {
+router.get('/',ensureLoggedIn, async (req, res, next) => {
   const result = await User.all();
   return res.json(result);
 });
@@ -22,7 +22,7 @@ router.get('/',ensureLoggedIn,async (req, res, next) => {
  *
  **/
 
-router.get('/:username', async (req, res, next) => {
+router.get('/:username', ensureCorrectUser, async (req, res, next) => {
   let username = req.params.username;
   let user = await User.get(username);
   return res.json(user);
@@ -38,9 +38,9 @@ router.get('/:username', async (req, res, next) => {
  *
  **/
 
-router.get('/:username/to', async (req, res, next) => {
+router.get('/:username/to', ensureCorrectUser, async (req, res, next) => {
   let username = req.params.username;
-  console.log(username);
+
   let messages = await User.messagesTo(username);
 
   let resultArr = [];
@@ -70,7 +70,7 @@ router.get('/:username/to', async (req, res, next) => {
  *
  **/
 
-router.get('/:username/from', async (req, res, next) => {
+router.get('/:username/from', ensureCorrectUser, async (req, res, next) => {
   let username = req.params.username;
   let messages = await User.messagesFrom(username);
 

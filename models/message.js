@@ -1,4 +1,12 @@
 const db = require('../db');
+const {
+  fromPhone,
+  accountSid,
+  authToken,
+  SECRET_KEY,
+  toPhone
+} = require('../config');
+const client = require('twilio')(accountSid, authToken);
 
 /** Message class for message.ly */
 
@@ -85,6 +93,11 @@ class Message {
     } catch (err) {
       return err;
     }
+  }
+  static async sendSmsMessage(fromPhone, toPhone, body) {
+    await client.messages
+      .create({ body, from: fromPhone, to: toPhone })
+      
   }
 }
 
